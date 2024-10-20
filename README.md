@@ -1,21 +1,14 @@
 # SpringBoot 项目初始模板
 
-> 作者：[程序员鱼皮](https://github.com/liyupi)
-> 仅分享于 [编程导航知识星球](https://yupi.icu)
-
 基于 Java SpringBoot 的项目初始模板，整合了常用框架和主流业务的示例代码。
-
-只需 1 分钟即可完成内容网站的后端！！！大家还可以在此基础上快速开发自己的项目。
-
-[toc]
 
 ## 模板特点
 
 ### 主流框架 & 特性
 
-- Spring Boot 2.7.x（贼新）
+- Spring Boot 2.7.x
 - Spring MVC
-- MyBatis + MyBatis Plus 数据访问（开启分页）
+- MyBatis + MyBatis Plus 数据访问
 - Spring Boot 调试工具和项目处理器
 - Spring AOP 切面编程
 - Spring Scheduler 定时任务
@@ -74,7 +67,7 @@
 
 ## 快速上手
 
-> 所有需要修改的地方鱼皮都标记了 `todo`，便于大家找到修改的位置~
+> 所有需要修改的地方都标记了 `todo`，便于大家找到修改的位置~
 
 ### MySQL 数据库
 
@@ -84,7 +77,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/my_db
+    url: jdbc:mysql://localhost:3300/my_database
     username: root
     password: 123456
 ```
@@ -153,8 +146,6 @@ PUT post_v1
 }
 ```
 
-这步不会操作的话需要补充下 Elasticsearch 的知识，或者自行百度一下~
-
 3）开启同步任务，将数据库的帖子同步到 Elasticsearch
 
 找到 job 目录下的 `FullSyncPostToEs` 和 `IncSyncPostToEs` 文件，取消掉 `@Component` 注解的注释，再次执行程序即可触发同步：
@@ -172,10 +163,10 @@ PUT post_v1
 
 ```
 // 指定生成参数
-String packageName = "com.yupi.springbootinit";
-String dataName = "用户评论";
-String dataKey = "userComment";
-String upperDataKey = "UserComment";
+String packageName = "com.kob.backend";
+String dataName = "题目";
+String dataKey = "question";
+String upperDataKey = "Question";
 ```
 
 生成代码后，可以移动到实际项目中，并且按照 `// todo` 注释的提示来针对自己的业务需求进行修改。
