@@ -1,5 +1,7 @@
 package com.kob.backend.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kob.backend.annotation.AuthCheck;
 import com.kob.backend.common.BaseResponse;
@@ -11,6 +13,7 @@ import com.kob.backend.exception.BusinessException;
 import com.kob.backend.exception.ThrowUtils;
 import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionAddRequest;
 import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionQueryRequest;
+import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionRemoveRequest;
 import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionUpdateRequest;
 import com.kob.backend.model.entity.QuestionBankQuestion;
 import com.kob.backend.model.entity.User;
@@ -18,17 +21,18 @@ import com.kob.backend.model.vo.QuestionBankQuestionVO;
 import com.kob.backend.service.QuestionBankQuestionService;
 import com.kob.backend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.sql.Wrapper;
 
 /**
  * 题库题目关联接口
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ * @author sy
  */
 @RestController
 @RequestMapping("/questionBankQuestion")
@@ -202,7 +206,27 @@ public class QuestionBankQuestionController {
         return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage, request));
     }
 
+    /**
+     * 移除题库题目关联
+     *
+     * @param questionBankQuestionRemoveRequest
+     * @return
+     */
+    @PostMapping("/remove")
+    public BaseResponse<Boolean> removeQuestionBankQuestion(
+            @RequestBody QuestionBankQuestionRemoveRequest questionBankQuestionRemoveRequest)
+    {
+        ThrowUtils.throwIf(questionBankQuestionRemoveRequest == null, ErrorCode.PARAMS_ERROR);
+        Long questionBankId = questionBankQuestionRemoveRequest.getQuestionBankId();
+        Long questionId = questionBankQuestionRemoveRequest.getQuestionId();
+        LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                .eq(QuestionBankQuestion::getQuestionBankId, questionBankId)
+                .eq(QuestionBankQuestion::getQuestionId, questionId);
+        boolean result = questionBankQuestionService.remove(lambdaQueryWrapper);
 
+
+        return ResultUtils.success(result);
+    }
 
     // endregion
 }

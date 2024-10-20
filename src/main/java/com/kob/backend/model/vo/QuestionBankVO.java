@@ -1,5 +1,7 @@
 package com.kob.backend.model.vo;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kob.backend.model.entity.Question;
 import com.kob.backend.model.entity.QuestionBank;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -10,8 +12,7 @@ import java.util.Date;
 /**
  * 题库视图
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ * @author sy
  */
 @Data
 public class QuestionBankVO implements Serializable {
@@ -57,6 +58,11 @@ public class QuestionBankVO implements Serializable {
      * 创建用户信息
      */
     private UserVO user;
+
+    /**
+     * 题库分页
+     */
+    Page<Question> questionPage;
 
     /**
      * 封装类转对象

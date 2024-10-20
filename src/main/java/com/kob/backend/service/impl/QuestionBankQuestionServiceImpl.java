@@ -6,14 +6,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kob.backend.common.ErrorCode;
 import com.kob.backend.constant.CommonConstant;
+import com.kob.backend.exception.BusinessException;
 import com.kob.backend.exception.ThrowUtils;
 import com.kob.backend.mapper.QuestionBankQuestionMapper;
 import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionQueryRequest;
+import com.kob.backend.model.entity.Question;
+import com.kob.backend.model.entity.QuestionBank;
 import com.kob.backend.model.entity.QuestionBankQuestion;
 import com.kob.backend.model.entity.User;
 import com.kob.backend.model.vo.QuestionBankQuestionVO;
 import com.kob.backend.model.vo.UserVO;
 import com.kob.backend.service.QuestionBankQuestionService;
+import com.kob.backend.service.QuestionBankService;
+import com.kob.backend.service.QuestionService;
 import com.kob.backend.service.UserService;
 import com.kob.backend.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +35,7 @@ import java.util.stream.Collectors;
 /**
  * 题库题目关联服务实现
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ * @author sy
  */
 @Service
 @Slf4j
@@ -39,6 +43,12 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private QuestionService questionService;
+
+    @Resource
+    private QuestionBankService questionBankService;
 
     /**
      * 校验数据
@@ -49,15 +59,27 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
     @Override
     public void validQuestionBankQuestion(QuestionBankQuestion questionBankQuestion, boolean add) {
         ThrowUtils.throwIf(questionBankQuestion == null, ErrorCode.PARAMS_ERROR);
+        //题库和题目必须存在
+        Long questionId = questionBankQuestion.getQuestionId();
+        if(questionId != null){
+            Question question = questionService.getById(questionId);
+            ThrowUtils.throwIf(question == null,ErrorCode.PARAMS_ERROR, "题目不存在");
+        }
+
+        Long questionBankId = questionBankQuestion.getQuestionBankId();
+        if(questionBankId != null){
+            QuestionBank questionBank = questionBankService.getById(questionBankId);
+            ThrowUtils.throwIf(questionBank == null,ErrorCode.PARAMS_ERROR, "题库不存在");
+        }
 
         // 创建数据时，参数不能为空
-        if (add) {
+       /* if (add) {
             // todo 补充校验规则
 
-        }
-        // 修改数据时，有参数则校验
+        }*/
+       /* // 修改数据时，有参数则校验
         // todo 补充校验规则
-     /*   if (StringUtils.isNotBlank(title)) {
+     *//*   if (StringUtils.isNotBlank(title)) {
             ThrowUtils.throwIf(title.length() > 80, ErrorCode.PARAMS_ERROR, "标题过长");
         }*/
     }

@@ -1,5 +1,6 @@
 package com.kob.backend.controller;
 
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kob.backend.annotation.AuthCheck;
 import com.kob.backend.common.BaseResponse;
@@ -9,14 +10,17 @@ import com.kob.backend.common.ResultUtils;
 import com.kob.backend.constant.UserConstant;
 import com.kob.backend.exception.BusinessException;
 import com.kob.backend.exception.ThrowUtils;
+import com.kob.backend.model.dto.question.QuestionQueryRequest;
 import com.kob.backend.model.dto.questionBank.QuestionBankAddRequest;
 import com.kob.backend.model.dto.questionBank.QuestionBankEditRequest;
 import com.kob.backend.model.dto.questionBank.QuestionBankQueryRequest;
 import com.kob.backend.model.dto.questionBank.QuestionBankUpdateRequest;
+import com.kob.backend.model.entity.Question;
 import com.kob.backend.model.entity.QuestionBank;
 import com.kob.backend.model.entity.User;
 import com.kob.backend.model.vo.QuestionBankVO;
 import com.kob.backend.service.QuestionBankService;
+import com.kob.backend.service.QuestionService;
 import com.kob.backend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -28,8 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * 题库接口
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ * @author sy
  */
 @RestController
 @RequestMapping("/questionBank")
@@ -42,6 +45,8 @@ public class QuestionBankController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private QuestionService  questionService;
     // region 增删改查
 
     /**
@@ -52,6 +57,7 @@ public class QuestionBankController {
      * @return
      */
     @PostMapping("/add")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Long> addQuestionBank(@RequestBody QuestionBankAddRequest questionBankAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankAddRequest == null, ErrorCode.PARAMS_ERROR);
         // todo 在此处将实体类和 DTO 进行转换
@@ -78,6 +84,7 @@ public class QuestionBankController {
      * @return
      */
     @PostMapping("/delete")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> deleteQuestionBank(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -127,17 +134,31 @@ public class QuestionBankController {
     /**
      * 根据 id 获取题库（封装类）
      *
-     * @param id
+     * @param questionBankQueryRequest
      * @return
      */
     @GetMapping("/get/vo")
-    public BaseResponse<QuestionBankVO> getQuestionBankVOById(long id, HttpServletRequest request) {
+    public BaseResponse<QuestionBankVO> getQuestionBankVOById(QuestionBankQueryRequest questionBankQueryRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBankQueryRequest == null,ErrorCode.PARAMS_ERROR);
+        Long id = questionBankQueryRequest.getId();
+
+
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+
         // 查询数据库
         QuestionBank questionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR);
+        //查询题库封装类
+        QuestionBankVO questionBankVO = questionBankService.getQuestionBankVO(questionBank, request);
+        boolean needQueryQuestionList = questionBankQueryRequest.isNeedQueryQuestionList();
+        if(needQueryQuestionList){
+            QuestionQueryRequest questionQueryRequest = new QuestionQueryRequest();
+            questionQueryRequest.setQuestionBankId(id);
+             Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
+             questionBankVO.setQuestionPage(questionPage);
+        }
         // 获取封装类
-        return ResultUtils.success(questionBankService.getQuestionBankVO(questionBank, request));
+        return ResultUtils.success(questionBankVO);
     }
 
     /**
@@ -211,6 +232,7 @@ public class QuestionBankController {
      * @return
      */
     @PostMapping("/edit")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> editQuestionBank(@RequestBody QuestionBankEditRequest questionBankEditRequest, HttpServletRequest request) {
         if (questionBankEditRequest == null || questionBankEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

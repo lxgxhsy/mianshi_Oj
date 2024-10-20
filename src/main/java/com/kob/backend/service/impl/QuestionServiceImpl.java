@@ -1,18 +1,24 @@
 package com.kob.backend.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.kob.backend.common.BaseResponse;
 import com.kob.backend.common.ErrorCode;
+import com.kob.backend.common.ResultUtils;
 import com.kob.backend.constant.CommonConstant;
 import com.kob.backend.exception.ThrowUtils;
 import com.kob.backend.mapper.QuestionMapper;
 import com.kob.backend.model.dto.question.QuestionQueryRequest;
 import com.kob.backend.model.entity.Question;
+import com.kob.backend.model.entity.QuestionBankQuestion;
 import com.kob.backend.model.entity.User;
 import com.kob.backend.model.vo.QuestionVO;
 import com.kob.backend.model.vo.UserVO;
+import com.kob.backend.service.QuestionBankQuestionService;
 import com.kob.backend.service.QuestionService;
 import com.kob.backend.service.UserService;
 import com.kob.backend.utils.SqlUtils;
@@ -32,8 +38,7 @@ import java.util.stream.Collectors;
 /**
  * 题目服务实现
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ * @author sy
  */
 @Service
 @Slf4j
@@ -42,6 +47,8 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     @Resource
     private UserService userService;
 
+    @Resource
+    private QuestionBankQuestionService questionBankQuestionService;
    //发顺丰
 
     /**
@@ -189,4 +196,39 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return questionVOPage;
     }
 
+
+    /**
+     * 分页获取题目列表（仅管理员可用）
+     *
+     * @param questionQueryRequest
+     * @return
+     */
+    @Override
+    public Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+
+        QueryWrapper<Question> queryWrapper = this.getQueryWrapper(questionQueryRequest);
+
+        //根据题库查询题目列表接口
+        Long questionBankId = questionQueryRequest.getQuestionBankId();
+        if(questionBankId != null){
+            //查询题库内的题目id
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQuery= Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                    .select(QuestionBankQuestion::getQuestionId)
+                    .eq(QuestionBankQuestion::getQuestionBankId,questionBankId);
+            List<QuestionBankQuestion> questionList = questionBankQuestionService.list(lambdaQuery);
+            if(CollUtil.isNotEmpty(questionList)){
+                Set<Long> questionIdList = questionList.stream()
+                        .map(QuestionBankQuestion::getQuestionId)
+                        .collect(Collectors.toSet());
+                queryWrapper.in("id",questionIdList);
+            }
+
+        }
+        // 查询数据库
+        Page<Question> questionPage = this.page(new Page<>(current, size),
+                queryWrapper);
+        return questionPage;
+    }
 }
