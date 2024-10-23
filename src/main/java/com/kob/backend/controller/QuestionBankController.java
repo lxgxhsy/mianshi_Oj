@@ -24,6 +24,7 @@ import com.kob.backend.service.QuestionService;
 import com.kob.backend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -46,6 +47,7 @@ public class QuestionBankController {
     private UserService userService;
 
     @Resource
+    @Lazy
     private QuestionService  questionService;
     // region 增删改查
 
