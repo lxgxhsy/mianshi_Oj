@@ -224,6 +224,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
                         .map(QuestionBankQuestion::getQuestionId)
                         .collect(Collectors.toSet());
                 queryWrapper.in("id",questionIdList);
+            }else{
+                //题库为空，则返回空列表
+                return new Page<>(current,size,0);
             }
 
         }
