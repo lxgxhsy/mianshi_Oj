@@ -6,7 +6,10 @@ import com.kob.backend.model.dto.user.UserQueryRequest;
 import com.kob.backend.model.entity.User;
 import com.kob.backend.model.vo.LoginUserVO;
 import com.kob.backend.model.vo.UserVO;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
@@ -117,4 +120,20 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 添加用户签到记录
+     *
+     * @param userId
+     * @return
+     */
+    boolean addUserSignIn(long userId);
+
+    /**
+     * 获取用户某一年的签到记录
+     *
+     * @param userId
+     * @param year   年份(为空表示当前年份)
+     * @return 签到关系映射
+     */
+    List<Integer> getUserSignInRecord(long userId, Integer year);
 }
