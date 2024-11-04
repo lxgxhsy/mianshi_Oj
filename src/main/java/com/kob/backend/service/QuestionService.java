@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.kob.backend.common.BaseResponse;
+import com.kob.backend.model.dto.post.PostQueryRequest;
 import com.kob.backend.model.dto.question.QuestionQueryRequest;
+import com.kob.backend.model.entity.Post;
 import com.kob.backend.model.entity.Question;
 import com.kob.backend.model.vo.QuestionVO;
 
@@ -58,4 +60,12 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
    Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest);
+
+    /**
+     * 从 ES 查询
+     *
+     * @param questionQueryRequest
+     * @return
+     */
+    Page<Question> searchFromEs(QuestionQueryRequest questionQueryRequest);
 }

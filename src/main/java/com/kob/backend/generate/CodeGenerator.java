@@ -28,7 +28,7 @@ public class CodeGenerator {
      */
     public static void main(String[] args) throws TemplateException, IOException {
         // 指定生成参数
-        String packageName = "com.yupi.springbootinit";
+        String packageName = "com.kob.backend";
         String dataName = "题库题目关联";
         String dataKey = "questionBankQuestion";
         String upperDataKey = "QuestionBankQuestion";
