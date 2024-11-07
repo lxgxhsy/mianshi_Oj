@@ -1,5 +1,6 @@
 package com.kob.backend.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,23 +12,21 @@ import com.kob.backend.common.ResultUtils;
 import com.kob.backend.constant.UserConstant;
 import com.kob.backend.exception.BusinessException;
 import com.kob.backend.exception.ThrowUtils;
-import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionAddRequest;
-import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionQueryRequest;
-import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionRemoveRequest;
-import com.kob.backend.model.dto.questionBankQuestion.QuestionBankQuestionUpdateRequest;
+import com.kob.backend.model.dto.question.QuestionBatchDeleteRequest;
+import com.kob.backend.model.dto.questionBankQuestion.*;
 import com.kob.backend.model.entity.QuestionBankQuestion;
 import com.kob.backend.model.entity.User;
 import com.kob.backend.model.vo.QuestionBankQuestionVO;
 import com.kob.backend.service.QuestionBankQuestionService;
+import com.kob.backend.service.QuestionService;
 import com.kob.backend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Wrapper;
+import java.util.List;
 
 /**
  * 题库题目关联接口
@@ -44,6 +43,9 @@ public class QuestionBankQuestionController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private QuestionService questionService;
 
     // region 增删改查
 
@@ -226,6 +228,57 @@ public class QuestionBankQuestionController {
 
 
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 批量向题库插入题目 (仅管理员可用)
+     * @param questionBankQuestionBatchQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/add/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchAddQuestionToBank(@RequestBody QuestionBankQuestionBatchAddRequest questionBankQuestionBatchQueryRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBankQuestionBatchQueryRequest == null,ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        Long questionBankId = questionBankQuestionBatchQueryRequest.getQuestionBankId();
+        List<Long> questionIds = questionBankQuestionBatchQueryRequest.getQuestionIdList();
+        questionBankQuestionService.batchAddQuestionsToBank(questionIds,questionBankId,loginUser);
+        
+        return ResultUtils.success(true);
+    }
+
+
+    /**
+     * 批量向题库移除题目 (仅管理员可用)
+     * @param questionBankQuestionBatchRemoveRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/remove/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchRemoveQuestionFromBank(@RequestBody QuestionBankQuestionBatchRemoveRequest questionBankQuestionBatchRemoveRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBankQuestionBatchRemoveRequest == null,ErrorCode.PARAMS_ERROR);
+        Long questionBankId = questionBankQuestionBatchRemoveRequest.getQuestionBankId();
+        List<Long> questionIds = questionBankQuestionBatchRemoveRequest.getQuestionIdList();
+        questionBankQuestionService.batchRemoveQuestionsFromBank(questionIds,questionBankId);
+
+        return ResultUtils.success(true);
+    }
+
+    /**
+     * 批量删除题目 (仅管理员可用)
+     * @param questionBatchDeleteRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest,
+                                                      HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR);
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIdList());
+        return ResultUtils.success(true);
     }
 
     // endregion

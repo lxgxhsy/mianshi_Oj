@@ -1,6 +1,7 @@
 package com.kob.backend.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.kob.backend.exception.BusinessException;
 import com.kob.backend.model.dto.question.QuestionEsDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -38,6 +39,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -329,6 +331,33 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         page.setRecords(resourceList);
         return page;
     }
+
+    /**
+     * 批量删除题目
+     * @param questionIdList
+     */
+	@Override
+    @Transactional(rollbackFor = Exception.class)
+	public void batchDeleteQuestions(List<Long> questionIdList) {
+	    if(CollUtil.isEmpty(questionIdList)){
+	        throw new BusinessException(ErrorCode.PARAMS_ERROR,"要删除的题目列表为空");
+        }
+
+	    for(Long questionId:questionIdList){
+	        boolean result = this.removeById(questionId);
+	        if(!result){
+	            throw new BusinessException(ErrorCode.PARAMS_ERROR,"删除题目失败");
+            }
+	        //移除题目题库关系
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                    .eq(QuestionBankQuestion::getQuestionId, questionId);
+            result = questionBankQuestionService.remove(lambdaQueryWrapper);
+            if(!result){
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,"删除题目关联题库失败");
+            }
+        }
+
+	}
 
 
 }
