@@ -117,6 +117,16 @@ hotkey:
     push-period: 1000
     etcd-server: http://localhost:2379
 
+bacos:
+  config:
+    server-addr: 127.0.0.1:8848 # 配置中心地址
+    bootstrap:
+      enable: true #预加载
+    data-id: mianshiya # 控制台填写的 group
+    group: DEFAULT_GROUP # 控制台填写的 group
+    type: yaml # 控制台填写的 dataId 类型
+    auto-refresh: true # 是否自动刷新
+
 
 server:
   address: 0.0.0.0
