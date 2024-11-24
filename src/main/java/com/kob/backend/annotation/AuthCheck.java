@@ -1,5 +1,7 @@
 package com.kob.backend.annotation;
 
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -20,6 +22,8 @@ public @interface AuthCheck {
      * @return
      */
     String mustRole() default "";
+
+//    WebMvcConfigurer
 
 }
 
