@@ -8,13 +8,14 @@ import com.kob.backend.model.dto.postthumb.PostThumbAddRequest;
 import com.kob.backend.model.entity.User;
 import com.kob.backend.service.PostThumbService;
 import com.kob.backend.service.UserService;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 帖子点赞接口

@@ -1,34 +1,31 @@
 package com.kob.backend.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.kob.backend.annotation.AuthCheck;
 import com.kob.backend.common.BaseResponse;
 import com.kob.backend.common.DeleteRequest;
 import com.kob.backend.common.ErrorCode;
 import com.kob.backend.common.ResultUtils;
+import com.kob.backend.constant.UserConstant;
 import com.kob.backend.exception.BusinessException;
 import com.kob.backend.exception.ThrowUtils;
 import com.kob.backend.model.dto.post.PostAddRequest;
 import com.kob.backend.model.dto.post.PostEditRequest;
 import com.kob.backend.model.dto.post.PostQueryRequest;
+import com.kob.backend.model.dto.post.PostUpdateRequest;
 import com.kob.backend.model.entity.Post;
 import com.kob.backend.model.entity.User;
-import com.kob.backend.constant.UserConstant;
-import com.kob.backend.model.dto.post.PostUpdateRequest;
 import com.kob.backend.model.vo.PostVO;
 import com.kob.backend.service.PostService;
 import com.kob.backend.service.UserService;
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 帖子接口
@@ -109,7 +106,7 @@ public class PostController {
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+   @SaCheckRole(UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updatePost(@RequestBody PostUpdateRequest postUpdateRequest) {
         if (postUpdateRequest == null || postUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -155,7 +152,7 @@ public class PostController {
      * @return
      */
     @PostMapping("/list/page")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+   @SaCheckRole(UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<Post>> listPostByPage(@RequestBody PostQueryRequest postQueryRequest) {
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();
