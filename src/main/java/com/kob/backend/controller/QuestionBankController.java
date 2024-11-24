@@ -221,7 +221,7 @@ public class QuestionBankController {
             blockHandler = "handleBlockException",
             fallback = "handleFallback")
     public BaseResponse<Page<QuestionBankVO>> listQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
-                                                               HttpServletRequest request) {
+                                                                       HttpServletRequest request) {
         long current = questionBankQueryRequest.getCurrent();
         long size = questionBankQueryRequest.getPageSize();
         // 限制爬虫
@@ -233,58 +233,13 @@ public class QuestionBankController {
         return ResultUtils.success(questionBankService.getQuestionBankVOPage(questionBankPage, request));
     }
 
-    /**
-     * 分页获取题库列表（封装类）
-     *
-     * @param questionBankQueryRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/list/page/vo/sentinel")
-    @SentinelResource(value = "listQuestionBankVOByPage",
-            blockHandler = "handleBlockException",
-            fallback = "handleFallback")
-    public BaseResponse<Page<QuestionBankVO>> listQuestionBankVOByPageSentinel(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
-                                                                       HttpServletRequest request) {
-        long current = questionBankQueryRequest.getCurrent();
-        long size = questionBankQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 200, ErrorCode.PARAMS_ERROR);
-        // 基于 IP 限流
-        String remoteAddr = request.getRemoteAddr();
-        Entry entry = null;
-        try{
-            entry = SphU.entry("listQuestionBankVOByPage", EntryType.IN, 1, remoteAddr);
-            //被保护的业务逻辑
-            // 查询数据库
-            Page<QuestionBank> questionBankPage = questionBankService.page(new Page<>(current, size),
-                    questionBankService.getQueryWrapper(questionBankQueryRequest));
-            // 获取封装类
-            return ResultUtils.success(questionBankService.getQuestionBankVOPage(questionBankPage, request));
-        }catch (BlockException ex){
-            //降级操作
-            if(ex instanceof DegradeException){
-                return handleFallback(questionBankQueryRequest, request, ex);
-            }
-        }finally {
-            if(entry != null){
-                entry.exit(1,remoteAddr);
-            }
-        }
-//todo
 
-    }
 
     /**
      * listQuestionBankVOByPage 降级操作：直接返回本地数据
      */
     public BaseResponse<Page<QuestionBankVO>> handleFallback(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
                                                              HttpServletRequest request, Throwable ex) {
-        //降级操作
-        if(ex instanceof DegradeException){
-            return handleFallback(questionBankQueryRequest, request, ex);
-        }
-
 
         // 可以返回本地数据或空数据
         return ResultUtils.success(null);
@@ -295,7 +250,12 @@ public class QuestionBankController {
      * 限流：提示“系统压力过大，请耐心等待”
      */
     public BaseResponse<Page<QuestionBankVO>> handleBlockException(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
+
                                                                    HttpServletRequest request, BlockException ex) {
+        //降级操作
+        if(ex instanceof DegradeException){
+            return handleFallback(questionBankQueryRequest, request, ex);
+        }
         // 限流操作
         return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统压力过大，请耐心等待");
     }
@@ -314,7 +274,7 @@ public class QuestionBankController {
      */
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionBankVO>> listMyQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
-                                                                 HttpServletRequest request) {
+                                                                         HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 补充查询条件，只查询当前登录用户的数据
         User loginUser = userService.getLoginUser(request);
